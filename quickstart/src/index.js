@@ -138,18 +138,78 @@ function roomJoined(room) {
   });
 }
 
+class StreamMixerService {
+  constructor() {
+    const AudioContextConstructor =
+      window.AudioContext || window.webkitAudioContext;
+
+    this.audioContext = new AudioContextConstructor();
+    this.audioSources = new Map();
+    this.audioDestination = this.audioContext.createMediaStreamDestination();
+  }
+
+  addAudioTrack(track) {
+    const stream = new MediaStream([track]);
+    const audioSource = this.audioContext.createMediaStreamSource(stream);
+
+    this.audioSources.set(track.id, audioSource);
+
+    if (this.destinationStream) {
+      audioSource.connect(this.audioDestination);
+    }
+  }
+
+  removeAudioTrack(track) {
+    this.removeAudioTrackById(track.id);
+  }
+
+  removeAudioTrackById(trackId) {
+    const audioSource = this.audioSources.get(trackId);
+
+    if (audioSource) {
+      audioSource.disconnect(this.audioDestination);
+
+      this.audioSources.delete(trackId);
+    }
+  }
+
+  getMixedStream() {
+    if (this.destinationStream) {
+      return this.destinationStream;
+    }
+
+    this.audioSources.forEach(audioSource =>
+      audioSource.connect(this.audioDestination)
+    );
+
+    const destinationStream = this.audioDestination.stream;
+
+    this.destinationStream = destinationStream;
+
+    return destinationStream;
+  }
+}
+
 // Preview LocalParticipant's Tracks.
 document.getElementById('button-preview').onclick = function() {
   var localTracksPromise = previewTracks
     ? Promise.resolve(previewTracks)
-    : Video.createLocalTracks();
+    : Video.createLocalVideoTrack();
 
-  localTracksPromise.then(function(tracks) {
-    window.previewTracks = previewTracks = tracks;
-    var previewContainer = document.getElementById('local-media');
-    if (!previewContainer.querySelector('video')) {
-      attachTracks(tracks, previewContainer);
-    }
+  localTracksPromise.then(function(videoTrack) {
+    const audioTrack = Video.createLocalAudioTrack().then(audioTrack => {
+      const streamMixer = new StreamMixerService();
+      streamMixer.addAudioTrack(audioTrack.mediaStreamTrack);
+      const mixedStream = streamMixer.getMixedStream();
+      const mixedTrack = mixedStream.getAudioTracks()[0];
+
+      window.previewTracks = previewTracks = [new Video.LocalAudioTrack(mixedTrack), videoTrack];
+
+      var previewContainer = document.getElementById('local-media');
+      if (!previewContainer.querySelector('video')) {
+        attachTracks(previewTracks, previewContainer);
+      }
+    }, () => console.error('Failed to create audio track'));
   }, function(error) {
     console.error('Unable to access local media', error);
     log('Unable to access Camera and Microphone');
