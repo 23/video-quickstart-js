@@ -20,8 +20,38 @@
   </div>
   <div id="log"></div>
 </div>
-
+<h1>Wowza</h1>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="publish-webrtc.js"></script>
+<style>
+ .div-section {margin-bottom: 8px;}
+</style>
+
+<div class="div-section">
+  <table>
+    <input type="hidden" id="userAgent" name="userAgent" value="" />
+    <tr><td><strong>SDP URL</strong></td><td><input type="text" id="sdpURL" size="50" value="wss://webrtcpublishdev.twentythree.net:9443/webrtc-session.json"/></td></tr>
+    <tr><td><strong>Application Name</strong></td><td><input type="text" size="50" id="applicationName" size="25" value="live"/></td></tr>
+    <tr><td><strong>Stream Name</strong></td><td><input type="text" size="50" id="streamName" size="25" value="mp4:dev-4875616-b00786f079472065c5a3.webrtc.mp4?e0b37001fb51730d6409dabb3e44bab052af970b"/></td></tr>
+    <tr><td><strong>Video Bitrate</strong></td><td><input type="text" id="videoBitrate" size="10" value="3000"/>&nbsp;kbps</td></tr>
+    <tr><td><strong>Audio Bitrate</strong></td><td><input type="text" id="audioBitrate" size="10" value="64"/>&nbsp;kbps</td></tr>
+    <tr><td><strong>FrameRate</strong></td><td><input type="text" id="videoFrameRate" size="10" value="25"/>&nbsp;fps</td></tr>
+    <tr><td>&nbsp;</td><td><input type="button" id="buttonGo" onclick="start()" value="" /></td></tr>
+  </table>
+</div>
+<div class="div-section">
+  <video id="wowzaVideo" autoplay muted style="height:480px;"></video>
+</div>
+
+<script type="text/javascript">
+ document.getElementById("userAgent").value = navigator.userAgent;
+ pageReady();
+</script>
+
+<div>
+  <span id="sdpDataTag"></span>
+</div>
+
 <script src="index.js"></script>
 </body>
 </html>

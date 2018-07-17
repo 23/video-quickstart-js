@@ -205,6 +205,8 @@ document.getElementById('button-preview').onclick = function() {
 
       window.previewTracks = previewTracks = [new Video.LocalAudioTrack(mixedTrack), videoTrack];
 
+      window.wowza.setStream(new MediaStream([mixedTrack, videoTrack.mediaStreamTrack]));
+
       var previewContainer = document.getElementById('local-media');
       if (!previewContainer.querySelector('video')) {
         attachTracks(previewTracks, previewContainer);
